@@ -1,4 +1,28 @@
 <?php
+
+//TODO: Break up this script into individual functions:
+//- Read in CSV file if it exists
+//  - create one if it doesn't
+//- Query the API and return results
+//- Iterate over results 
+//- Process each individual result
+//  - Check CSV to see if this result has been previously processed
+//  - Translate from native format into SimpleXML 
+//  - Write result to CSV
+//- Create output directory and write PDFs/MODS records to filesystem
+
+//TODO: When creating functions, keep the following things in mind:
+//- Be aware of what variables are getting passed in (scope)
+//- Do error checking, and break loudly when errors are encountered
+//- Possible extra argument: debug=FALSE by default. If set to true, print out lots of extra output
+
+//TODO: Would also be nice to add arguments or prompts to the script for:
+//- Search terms
+//- Search namespaces
+//- CSV location (should always point to /vagrant)
+//- Output name (should always point to /vagrant)
+//- Debug mode
+
 ini_set('max_execution_time', 4800); // 80 minute execution time on script. You can calculate what to set this at, depending on the # of search results. 10sec+10sec+(3 * NumberOfResults)+60sec = total processing time
 date_default_timezone_set('America/New_York');
 error_reporting(E_ERROR);
@@ -7,8 +31,16 @@ $currDate = date("Ymd"); // Store current date in YYYYMMDD format
 
 // FILL IN THE VARIABLES BELOW TO CONSTRUCT YOUR SEARCH
 
+
 $searchTerm = "Florida State University[Affiliation] AND College of Human Sciences[Affiliation]"; // To make things easier, enter an unencoded search term here. The script will URL encode the term and pass it to the API
 $searchNamespace = "Human_Sciences"; // Enter a descriptive name for the search here. MODS files and PDFs will be stored in /output/namespace folder
+
+
+// TODO: Get rid of database stuff entirely. You don't need to connect to
+// SQLite or anything, use a CSV instead.
+// At this point in the script, you should be looking for a CSV in the same folder,
+// and reading it into a variable so you can check against it later.
+// This CSV should contain ID, the date added, and the search terms used to retrieved it
 
 // SQLite DB information
 
