@@ -1,9 +1,10 @@
-﻿#!/usr/bin/php/
+﻿#!/usr/bin/php
 
 <?php
 echo "\n~~~~~~~~~~~~~~~~~\n~~~PMC_Grabber~~~\n~~~~~~~~~~~~~~~~~\n\n";
 date_default_timezone_set('America/New_York');
 
+//Create the variable that is used to name the output folder for XMLs and PDFs
 echo "Enter the desired output folder for files to be saved to and press [Enter]: ";
 
 $searchNamespace = trim(fgets(STDIN));
@@ -26,11 +27,11 @@ $i = "";
 for ($i = 0; $i < $count; $i++){
     $idList .= "{$jsonResponse->esearchresult->idlist[$i]}";
     if($i != ($count - 1)){
-    $idList .= ",";           
+    $idList .= ",";
     }
 }
 
-//create array from $idList
+//Create array from $idList
 $passed = $idList;
 $passed = explode(",", $passed);
 $passedcount = count($passed);
@@ -42,25 +43,24 @@ $handlemaster = fopen('./csvindexmaster.csv', 'a');
 $row = 1;
 $uidarray = [];
 if (($handlemaster = fopen("csvindexmaster.csv", "r")) !== FALSE) {
-    while (($data = fgetcsv($handlemaster, 1000, ",")) !== FALSE) {
-        $num = count($data);
+    while (($data = fgetcsv($handlemaster, 10000, ",")) !== FALSE) {
         $row++;
             $uidarray[] = $data[0];
     }
     fclose($handlemaster);
 }
 
-$handlemaster = fopen('./csvindexmaster.csv', 'a'); 
+$handlemaster = fopen('./csvindexmaster.csv', 'a');
 
 $newrecords = array();
 $datearray = array();
 $termarray = array();
 
-echo "The number of UIDs being checked against csvindexmaster.csv is $passedcount." . PHP_EOL;
+echo "The number of UIDs being checked against csvindexmaster.csv is $passedcount. \n";
 //The following for statement iterates through the number of items passed to it and adds them to the master
 for($i = 0; $i < $passedcount; $i++){
 if(!in_array($passed[$i], $uidarray)){
-	$newrecords[] = $passed[$i];  
+	$newrecords[] = $passed[$i];
 	}
 }
 
@@ -79,30 +79,30 @@ for($i = 0; $i < $rowcount; $i++){
 $termarray[] = $searchTerm;
 }
 
-$d = array_map(null, $newrecords, $datearray, $termarray);
-foreach ($d as $row) {
+$entry = array_map(null, $newrecords, $datearray, $termarray);
+foreach ($entry as $row) {
 fputcsv($handlemaster, $row);
 }
 
 
 //The $recordscount variable opens the csv and reads the number of rows/records
 $recordscount = file('./csvindexmaster.csv');
-echo "There are " . count($recordscount)." unique records in the csvindexmaster.csv file. \n";
+echo "There are now " . count($recordscount)." unique records in the csvindexmaster.csv file. \n";
 
 //the $newrecords array is a list of only those UIDS that did not exist in the original CSV THIS SHOULD ALMOST CERTAINLY BE MOVED UP AND USED TO DO THE STRING SEARCH IN THE API
 if($newrecords == true){
-echo "The following retreived records are being checked against 'csvindexmaster.csv': \n";
+echo "The following retreived records are being checked against the CSV: \n";
 echo implode(",", $newrecords) . "\n";
 echo "The following records are now in the CSV (UID, Date/Time, Search Terms): \n";
 for ($i = 0; $i < $rowcount; $i++){
-echo $newrecords[$i] . ','. $datearray[$i] . ',' . $termarray[$i] . PHP_EOL; 
+echo $newrecords[$i] . ','. $datearray[$i] . ',' . $termarray[$i] . PHP_EOL;
 }
 } else {
 	echo "'csvindexmaster.csv' is up-to-date. No new records have been passed to 'csvindexmaster.csv'. \n";
 }
 
 if ($newrecords == true){
-//all new records being added are changed to a comma separated list to be added 
+//all new records being added are changed to a comma separated list to be added
 $idList = implode(",",$newrecords);
 
 // Construct eSummary request & decode the JSON
@@ -131,31 +131,29 @@ for($index = 0; $index < count($idListArray); $index++){
 	// direct variables - don't need to be processed really
     $issn = $eFetchXML->PubmedArticle[$index]->MedlineCitation->Article->Journal->ISSN->__toString();
 
-  $volume = $eFetchXML->PubmedArticle[$index]->MedlineCitation->Article->Journal->JournalIssue->Volume->__toString();
+    $volume = $eFetchXML->PubmedArticle[$index]->MedlineCitation->Article->Journal->JournalIssue->Volume->__toString();
 
      $issue = $eFetchXML->PubmedArticle[$index]->MedlineCitation->Article->Journal->JournalIssue->Issue->__toString();
-	 
+
     $journalTitle = $eFetchXML->PubmedArticle[$index]->MedlineCitation->Article->Journal->Title->__toString();
-	
+
     $journalAbrTitle = $eFetchXML->PubmedArticle[$index]->MedlineCitation->Article->Journal->ISOAbbreviation->__toString();
 
     $articleTitle = $eFetchXML->PubmedArticle[$index]->MedlineCitation->Article->ArticleTitle->__toString(); // This is a full title, inclusive of SubTitle. May have to explode out on Colon
 
- 
+
     // array variables - returns an array, so we need to iterate and process what we want from it
     $abstract = $eFetchXML->PubmedArticle[$index]->MedlineCitation->Article->Abstract->AbstractText; // may return array to iterate for multiple paragraphs
-    
-	$authors = $eFetchXML->PubmedArticle[$index]->MedlineCitation->Article->AuthorList; // will return Array of authors.
- 
+
+    $authors = $eFetchXML->PubmedArticle[$index]->MedlineCitation->Article->AuthorList; // will return Array of authors.
+
 	$grants = $eFetchXML->PubmedArticle[$index]->MedlineCitation->Article->GrantList; // returns an array with objects containing GrantID, Acronym, Agency, Country
-	
+
 	$keywords = $eFetchXML->PubmedArticle[$index]->MedlineCitation->KeywordList->Keyword; // returns an array which can be iterated for all keywords
-	
+
    // Not all articles have it, but there are some with Mesh arrays (Medical Subject Headings)
     $mesh = $eFetchXML->PubmedArticle[$index]->MedlineCitation->MeshHeadingList; // returns array with objects for elements
- 
 
-   
 // VARIABLES FROM ESUMMARY, coming from JSON stream
     $uid = $jsonESum->result->uids[$index]; // Important hook for rest of variables in JSON Tree
 
@@ -163,25 +161,21 @@ for($index = 0; $index < count($idListArray); $index++){
     $sortTitle = $jsonESum->result->$uid->sorttitle;
 
    $pages = $jsonESum->result->$uid->pages;
-  
+
    $essnESum = $jsonESum->result->$uid->essn;
- 
+
     $sortPubDate = $jsonESum->result->$uid->sortpubdate;
- 
- 
+
     // array variables, we need to iterate and process
     $articleIdESum = $jsonESum->result->$uid->articleids; // returns an array
-	
+
 	// PREPARE GRABBED DATA FOR PASSING TO RECORDS ARRAY
     // Abstract Parse- Whether text is contained in a single element or not, it will always return as an array.
         $abstractString = "";
-        for($i = 0; $i < count($abstract); $i++){
-            // Add "new line" functionality? Otherwise multiple paragraphs wil just be combined
+        for($i = 0; $i < @count($abstract); $i++){
             $abstractString .= $abstract[$i]->__toString() ." ";
         }
 
-
- 
    // Author Parsing - Transform original author array into new author array containing FirstName, LastName, Fullname
         $authorArray = array();
         for ($i = 0; $i < count($authors->Author); $i++){
@@ -242,20 +236,9 @@ if($grants == true){
         
             // Generate PDF link & Check for Embargo & Flag Embargo Status
             if($idtype == "pmcid"){
-                // When a record has a PMCID, it means there is a manuscript (although not necessarily a PDF)
-                // The manuscript can be emargoed or not. If embargoed, we need to flag that. 
-                // Sometimes a record is embargo'd but this metadata isn't in the record - this is captured on the PDF grab
-            $needle = "embargo-date";
-                if(strpos($value,$needle)){
-                    // if this returns true, then there is an embargo date
-                    $articleIdArray["embargo"] = TRUE;
-                    $articleIdArray["pdf"] = "embargoed";
-                    
-                } else {
-                        $articleIdArray["embargo"] = FALSE;
+             
                         $articleIdArray["pdf"] = "https://www.ncbi.nlm.nih.gov/pmc/articles/{$articleIdArray["pmc"]}/pdf"; // If a PDF for this PMCID exists, this link will resolve to it
-                }
-            }
+             }
         
 	
     // Article Title Parsing
@@ -391,14 +374,14 @@ if($grants == true){
 
 }
 } else{
-	echo "There are no new records. eFetch and eSummary have not been executed." . PHP_EOL;
+	echo "There are no new records. eFetch and eSummary have not been executed. \n";
 }		
 
 
 //Check that $recordsArray contains data and map XML		 
 if(isset($recordsArray)){
 foreach($recordsArray as $modsRecord){
-// GENERATE MODS RECORD FOR EACH UID REMAINING
+//GENERATE MODS RECORD FOR EACH UID REMAINING
      
 $xml = new SimpleXMLElement('<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:etd="http://www.ndltd.org/standards/metadata/etdms/1.0/" xmlns:flvc="info:flvc/manifest/v1" xsi:schemaLocation="http://www.loc.gov/standards/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-4.xsd" version="3.4"></mods>');
       
@@ -542,7 +525,7 @@ $xml = new SimpleXMLElement('<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xsi=
             $xml->addChild('note', htmlspecialchars($modsRecord['note']['grants']))->addAttribute('displayLabel','Grant Number');
         }
         
-        $PMCLocation = "https://www.ncbi.nlm.nih.gov/pmc/articles/{$modsRecord['identifier']['pmc']}";
+        $PMCLocation = @"https://www.ncbi.nlm.nih.gov/pmc/articles/{$modsRecord['identifier']['pmc']}";
         $pubNoteString = "This NIH-funded author manuscript originally appeared in PubMed Central at {$PMCLocation}.";
         
         $xml->addChild('note', $pubNoteString)->addAttribute('displayLabel','Publication Note');
@@ -595,7 +578,7 @@ $dom->loadXML($xml->asXML());
 fwrite($output,$dom->saveXML());
 fclose($output);
 // GRAB PDF AND SAVE TO OUTPUT FOLDER
-$PDF = file_get_contents($modsRecord['identifier']['pdf']);
+$PDF = @file_get_contents($modsRecord['identifier']['pdf']);
 if(!$PDF){
     if(!is_dir($directoryUngrabbed)){
         mkdir($directoryUngrabbed, 0755, true);
