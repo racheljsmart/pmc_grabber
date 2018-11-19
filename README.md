@@ -1,15 +1,14 @@
 # pmc_grabber
 
-PMC_Grabber is a PHP-based utility to be used with the NIH PubMed API interfaces. It pulls metadata from the eSummary and eFetch APIs and converts the metadata into valid MODS records. See a demo of the tool here: https://youtu.be/12FpWZeXQPA
-
+PMC_Grabber version 3 is an update to the PHP-based utility used with the NIH PubMed API interfaces. It pulls metadata from the eSummary and eFetch APIs and converts the metadata into valid MODS records.
 ## Using PMC_Grabber
 
-1. If this is the first time running the script, make sure the database.sql file is deleted from the directory.
+1. The major update to version 3 is the removal of SQL databases. The current version utilizes a local CSV file to store records.
   * Also, edit index.php directly to change the search string to your desired search string. The string must be HTML-Encoded. You can use the [Advance Search tool on PubMed](http://www.ncbi.nlm.nih.gov/pubmed/advanced) to build a complex string of searches.
   * Be aware of the maximum execution time of the script. The script builds in sleep time for each API call ~~and PDF grabs~~. Allow 20 seconds + 10 seconds per record + 300 seconds to give 5 minutes extra time to be safe.
   * Review the overview below to get an understanding of how to re-tool PMC_Grabber for use at your institution. You will want to change static elements in the MODS record at the very least. Becomming familiar with the structure of PubMed's data output through eSummary and eFetch is highly recommended.
 
-2. Launch index.php in a browser (or through the command line if you want finer control of stopping the script from running).
+2. Run index.php from the command line using 'php index.php'  ...
   * Development and testing of this script was done using a local webserver. If executing the script in a browser from a local webserver, you can stop the script by stopping the httpd service on your machine.
 
 3. Once the script is finished running, you can launch admin.php in a browser and view the contents of the local database through the PHPLiteAdmin administration layer.
