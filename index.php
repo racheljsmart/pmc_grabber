@@ -589,7 +589,7 @@ if(!$PDF){
 } else {
     $fileNamePDF = "./output/" . $searchNamespace . "/" . $modsRecord['identifier']['iid'] . ".pdf";
     file_put_contents($fileNamePDF, $PDF);
-	print "Grabbed PDF for IID {$modsRecord['identifier']['iid']}\n"; //just added this DELETE?
+	print "Grabbed PDF for IID {$modsRecord['identifier']['iid']}\n"; 
 }
 }
 
